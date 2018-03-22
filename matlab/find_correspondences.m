@@ -1,37 +1,39 @@
-function correspondences = find_correspondences(source_pc, source_feats, target_pc, target_feats)
-  % Finds correspondences between the source and target using the features
-  %   source_pc - the source_pc points
-  %   source_feats - the features of the source pc
-  %   target_pc - the target_pc points
-  %   target_feats - the features of the target pc
-  %   correspondences - a n x 2 matrix where n is the number of points in source_pc and the first
-  %     column is the index in source pc and the second column is the index in target pc
-  correspondences = [1 1];
+function correspondences = find_correspondences(icp)
+    % Finds correspondences between the source and target using the features
+    %   icp.source_pc - the source_pc points
+    %   icp.source_feats - the features of the source pc
+    %   icp.target_pc - the target_pc points
+    %   icp.target_feats - the features of the target pc
+    %   correspondences - a n x 2 matrix where n is the number of points in source_pc and the first
+    %     column is the index in source pc and the second column is the index in target pc
 
-
-  %% Please refer to the following link for the fomulae of the distances.
-  %  https://doi.org/10.1109/TPAMI.2017.2648803
+    %% Please refer to the following link for the fomulae of the distances.
+    %  https://doi.org/10.1109/TPAMI.2017.2648803
     lambdap = 0.5;
     lambdan = 0.3;
     lambdac = 0.2;
-    [~,m]=size(source_pc);
-    [~,n]=size(target_pc);
+    [~,m]=size(icp.source_pc);
+    [~,n]=size(icp.target_pc);
     dis = zeros(n,m);
     for i=1:m
         % Calculate D_p, the euclidean distance between points.
         for j=1:n
-         tmp_matrix = sqrt((target_pc(1,j)-source_pc(1,i))^2 + (target_pc(2,j)-source_pc(2,i))^2 + (target_pc(3,j)-source_pc(3,i))^2);
-         dis(j,i) = tmp_matrix;
+            tmp_matrix = sqrt((icp.target_pc(1,j)-icp.source_pc(1,i))^2 + (icp.target_pc(2,j)-icp.source_pc(2,i))^2 + (icp.target_pc(3,j)-icp.source_pc(3,i))^2);
+            dis(j,i) = tmp_matrix;
         end
         R = max(dis(:,i));
         % Normalize D_p.
-        dis(:,i) = dis(:,i)/R;
+        if R ~= 0
+            dis(:,i) = dis(:,i)/R;
+        else
+            dis(:,i) = 0;
+        end
         % Calculate D_n and D_c for each point pair.
         for j=1:n
-            ni = source_feats(1:3,i);
-            nj = target_feats(1:3,j);
-            feati = source_feats(:,i);
-            featj = target_feats(:,j);
+            ni = icp.source_feats(1:3,i);
+            nj = icp.target_feats(1:3,j);
+            feati = icp.source_feats(:,i);
+            featj = icp.target_feats(:,j);
             dn = Dn(ni,nj);
             dc = Dc(feati, featj, 0.01);
             % The distance metric.
@@ -55,19 +57,23 @@ end
 
 
 function dn = Dn(ni,nj)
-% Distance between normals of the two points.
-%   ni - Normal vector of the i-th source point.
-%   nj - Normal vector of the j-th target point.
+    % Distance between normals of the two points.
+    %   ni - Normal vector of the i-th source point.
+    %   nj - Normal vector of the j-th target point.
     dn = 1-ni'*nj;
 end
 
 
 function dc = Dc(feati, featj, thetak)
-% Distance between curvatures of the two points.
-%   feati - All the features of the i-th source point.
-%   featj - All the features of the j-th target point.
-%   thetak - A threshold to determine if k1 and k2 are similar or not.
+    % Distance between curvatures of the two points.
+    %   feati - All the features of the i-th source point.
+    %   featj - All the features of the j-th target point.
+    %   thetak - A threshold to determine if k1 and k2 are similar or not.
     kmax = max(abs(feati(7)),abs(feati(8)));
+    if kmax == 0
+        dc = 0;
+        return;
+    end
     if abs(feati(7)-feati(8)) < thetak
         dc = (abs(feati(7) - featj(7))+abs(feati(8)) - featj(8)) / kmax;
     else
