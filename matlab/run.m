@@ -11,7 +11,7 @@ function run(data_file)
   [source_pc, target_pc] = load_data(data_file);
 
   % Run curvature ICP
-  curv_icp(source_pc, target_pc);
+  final_tf = curv_icp(source_pc, target_pc);
 
   % Display results
 end
