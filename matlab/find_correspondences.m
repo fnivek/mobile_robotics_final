@@ -9,9 +9,10 @@ function correspondences = find_correspondences(icp)
 
     %% Please refer to the following link for the fomulae of the distances.
     %  https://doi.org/10.1109/TPAMI.2017.2648803
-    lambdap = 0.5;
+    lambdap = 0.5; % We need to tune these parameters.
     lambdan = 0.3;
     lambdac = 0.2;
+    thetak = 0.01;
     [~,m]=size(icp.source_pc);
     [~,n]=size(icp.target_pc);
     dis = zeros(n,m);
@@ -35,7 +36,7 @@ function correspondences = find_correspondences(icp)
             feati = icp.source_feats(:,i);
             featj = icp.target_feats(:,j);
             dn = Dn(ni,nj);
-            dc = Dc(feati, featj, 0.01);
+            dc = Dc(feati, featj, thetak);
             % The distance metric.
             dis(j,i) = lambdap*dis(j,i) + lambdan*dn + lambdac*dc;
         end
