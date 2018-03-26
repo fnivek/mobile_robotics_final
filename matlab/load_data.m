@@ -1,4 +1,4 @@
-function [source_pc, target_pc] = load_data(model,scene,plot)
+function [source_pc, target_pc] = load_data(model,scene,plot,ds_ratio)
     % Loads a source and target point cloud
     %   filename - file name of the data to load
     source_pc_struct = load(model);
@@ -9,8 +9,10 @@ function [source_pc, target_pc] = load_data(model,scene,plot)
     fn = fieldnames(target_pc_struct);
     target_pc = getfield(target_pc_struct,fn{1}); 
     
-    source_pc = downsample_pc(source_pc,1);
-    target_pc = downsample_pc(target_pc,10);
+    %Downsample happens here 
+    source_pc = downsample_pc(source_pc,ds_ratio.source);
+    target_pc = downsample_pc(target_pc,ds_ratio.target);
+    
     if(plot)
         figure(1)
         plot3(source_pc(1, :), source_pc(2, :), source_pc(3, :), 'k.');

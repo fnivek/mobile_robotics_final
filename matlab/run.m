@@ -4,6 +4,8 @@ function run(model,scene)
 
     % Set some reasonable defaults
     plot_flag = true;
+    ds_ratio.source = 1;  %downsample ratio, 1 for keeping raw data density
+    ds_ratio.target = 10;
     if ~exist('model', 'var')
       model = 'data/model/toy_downsample.mat';
     end
@@ -12,7 +14,7 @@ function run(model,scene)
     end
 
     % Load the data
-    [source_pc, target_pc] = load_data(model,scene,plot_flag);
+    [source_pc, target_pc] = load_data(model,scene,plot_flag,ds_ratio);
 
     % Run curvature ICP
     final_tf = curv_icp(source_pc, target_pc);
