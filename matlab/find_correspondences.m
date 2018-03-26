@@ -9,7 +9,7 @@ function correspondences = find_correspondences(icp)
 
     %% Please refer to the following link for the fomulae of the distances.
     %  https://doi.org/10.1109/TPAMI.2017.2648803
-    f = waitbar(0,'1','Name','Approximating pi...',...
+    f = waitbar(0,'1','Name','Finding Correspondence',...
     'CreateCancelBtn','setappdata(gcbf,''canceling'',1)');
     
     lambdap = 0.5; % We need to tune these parameters.
@@ -43,7 +43,7 @@ function correspondences = find_correspondences(icp)
             % The distance metric.
             dis(j,i) = lambdap*dis(j,i) + lambdan*dn + lambdac*dc;
         end
-        waitbar(i/m,f,'finding correspondence')
+        waitbar(i/m,f,strcat(sprintf('%12.5f',i/m*100),'%'))
         if getappdata(f,'canceling')
             break
         end
