@@ -9,6 +9,8 @@ function [source_pc, target_pc] = load_data(model,scene,plot)
     fn = fieldnames(target_pc_struct);
     target_pc = getfield(target_pc_struct,fn{1}); 
     
+    source_pc = downsample_pc(source_pc,1);
+    target_pc = downsample_pc(target_pc,10);
     if(plot)
         figure(1)
         plot3(source_pc(1, :), source_pc(2, :), source_pc(3, :), 'k.');
