@@ -11,7 +11,7 @@ function correspondences = find_correspondences(icp)
     %  https://doi.org/10.1109/TPAMI.2017.2648803
     f = waitbar(0,'1','Name','Finding Correspondence',...
     'CreateCancelBtn','setappdata(gcbf,''canceling'',1)');
-    
+
     lambdap = 0.5; % We need to tune these parameters.
     lambdan = 0.3;
     lambdac = 0.2;
@@ -49,20 +49,19 @@ function correspondences = find_correspondences(icp)
         end
     end
 
-    
+
     delete(f)
     % Find the minimum distance, find the correspondences.
-    correspondences = zeros(m,1);
+    correspondences = zeros(0, 2);
     min_dist = zeros(m,1);
     for i = 1:m
-        [correspondences(i),~] = find(dis(:,i) == min(dis(:,i)));
+        index = find(dis(:,i) == min(dis(:,i)));
+        if isempty(index)
+            continue
+        end
+        correspondences = [correspondences; i, index];
         min_dist(i) = min(dis(:,i));
     end
-    % The left column is the indices of the source points (1:number_of_source_points).
-    % The right column is the corresponding indices of the target points.
-    left=(1:m)';
-    correspondences = [left,correspondences];
-
 end
 
 
