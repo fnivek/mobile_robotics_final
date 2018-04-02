@@ -1,4 +1,4 @@
-function [final_tf] = curv_icp(source_pc, target_pc, varargin) % guess, max_itters, err_converged_eps, err_diff_converged_eps)
+function [final_tf, tfed_pc] = curv_icp(source_pc, target_pc, varargin) % guess, max_itters, err_converged_eps, err_diff_converged_eps)
     % Performs ICP with curvature
     %   source_pc - The source point cloud for ICP
     %   target_pc - The target point cloud for ICP
@@ -21,13 +21,14 @@ function [final_tf] = curv_icp(source_pc, target_pc, varargin) % guess, max_itte
     icp.max_itters = p.Results.max_itters;
     icp.err_converged_eps = p.Results.err_converged_eps;
     icp.err_diff_converged_eps = p.Results.err_diff_converged_eps;
+    icp.nn_search_radius = 0.03;
 
     % Apply guess
     icp.source_pc = transform_pc(icp.final_tf, icp.source_pc);
 
     % Calculate features
-    [icp.source_feats] = calc_features(icp.source_pc);
-    [icp.target_feats] = calc_features(icp.target_pc);
+    [icp.source_feats] = calc_features(icp.source_pc, icp.nn_search_radius);
+    [icp.target_feats] = calc_features(icp.target_pc, icp.nn_search_radius);
 
     % Check convergence
     while ~is_converged(icp)
@@ -38,7 +39,8 @@ function [final_tf] = curv_icp(source_pc, target_pc, varargin) % guess, max_itte
         inc_tf = optimize(icp);
 
         % Apply transform
-        icp.source_pc = transform_pc(icp.final_tf, icp.source_pc);
+        icp.source_feats = transform_feature(inc_tf, icp.source_feats);
+        icp.source_pc = icp.source_feats(1:3, :);
 
         % Update final transform
         % TODO: Check if accumulating correctly
@@ -46,7 +48,12 @@ function [final_tf] = curv_icp(source_pc, target_pc, varargin) % guess, max_itte
 
         % Update loop vars
         icp.itter = icp.itter + 1;
+
+        % Display
+        viz_current_itter(icp);
+        % pause;
     end
 
     final_tf = icp.final_tf;
+    tfed_pc = icp.source_pc;
 end

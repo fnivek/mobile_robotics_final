@@ -17,7 +17,7 @@ function run(model,scene)
     [source_pc, target_pc] = load_data(model,scene,plot_flag,ds_ratio);
 
     % Run curvature ICP
-    final_tf = curv_icp(source_pc, target_pc);
+    [final_tf, tfed_pc] = curv_icp(source_pc, target_pc);
 
     % Display results
 end
