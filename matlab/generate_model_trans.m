@@ -11,7 +11,7 @@ function [model_after_trans, M] = generate_model_trans(model)
     tran = randn(1,3) * 0.1;
     rot = randn(1,3) * pi;
     M = makehgtform;
-    M = makehgtform('translate',tran,'xrotate',rot(1),'yrotate',rot(1),'zrotate',rot(1));
+    M = makehgtform('translate',tran,'xrotate',rot(1),'yrotate',rot(2),'zrotate',rot(3));
     model_after_trans = M * source_pc;
     plot3(source_pc(1,:),source_pc(2,:),source_pc(3,:),'r.');
     hold on
