@@ -7,7 +7,7 @@ function [final_tf, tfed_pc] = curv_icp(source_pc, target_pc, varargin) % guess,
     % Handle optional args
     p = inputParser;
     addParameter(p, 'guess', eye(4));
-    addParameter(p, 'max_itters', 100);
+    addParameter(p, 'max_itters', 3);
     addParameter(p, 'err_converged_eps', 1e-6);
     addParameter(p, 'err_diff_converged_eps', 1e-6);
     parse(p, varargin{:});
@@ -22,6 +22,9 @@ function [final_tf, tfed_pc] = curv_icp(source_pc, target_pc, varargin) % guess,
     icp.err_converged_eps = p.Results.err_converged_eps;
     icp.err_diff_converged_eps = p.Results.err_diff_converged_eps;
     icp.nn_search_radius = 0.03;
+    global result;
+    global last_err;
+    last_err = 0;
 
     % Apply guess
     icp.source_pc = transform_pc(icp.final_tf, icp.source_pc);
@@ -30,11 +33,14 @@ function [final_tf, tfed_pc] = curv_icp(source_pc, target_pc, varargin) % guess,
     [icp.source_feats] = calc_features(icp.source_pc, icp.nn_search_radius);
     [icp.target_feats] = calc_features(icp.target_pc, icp.nn_search_radius);
 
+    tic;
+    icp.correspondences = find_correspondences(icp);
+    result.time = [result.time,toc];
     % Check convergence
     while ~is_converged(icp)
-        % Find correspondences
-        icp.correspondences = find_correspondences(icp);
-
+        result.ite = result.ite + 1;
+        tic;
+        
         % Optimize
         inc_tf = optimize(icp);
 
@@ -49,9 +55,15 @@ function [final_tf, tfed_pc] = curv_icp(source_pc, target_pc, varargin) % guess,
         % Update loop vars
         icp.itter = icp.itter + 1;
 
+        % Find correspondences
+        icp.correspondences = find_correspondences(icp);
+
         % Display
         viz_current_itter(icp);
         % pause;
+        
+        % Update result
+        result.time = [result.time,toc];
     end
 
     final_tf = icp.final_tf;
