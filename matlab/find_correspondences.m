@@ -11,6 +11,7 @@ function correspondences = find_correspondences(icp)
     %  https://doi.org/10.1109/TPAMI.2017.2648803
     f = waitbar(0,'1','Name','Finding Correspondence',...
     'CreateCancelBtn','setappdata(gcbf,''canceling'',1)');
+    global euc_dist;
 
     lambdap = 0.5; % We need to tune these parameters.
     lambdan = 0.3;
@@ -32,6 +33,7 @@ function correspondences = find_correspondences(icp)
         else
             dis(:,i) = 0;
         end
+        euc_dist = dis;
         % Calculate D_n and D_c for each point pair.
         for j=1:n
             ni = icp.source_feats(1:3,i);
