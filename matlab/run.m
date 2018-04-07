@@ -4,8 +4,8 @@ function run(model,scene)
 
     % Set some reasonable defaults
     plot_flag = true;
-    ds_ratio.source = 10;  %downsample ratio, 1 for keeping raw data density
-    ds_ratio.target = 100;
+    ds_ratio.source = 1;  %downsample ratio, 1 for keeping raw data density
+    ds_ratio.target = 10;
     if ~exist('model', 'var')
       model = 'data/model/toy_downsample.mat';
     end
