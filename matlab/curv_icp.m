@@ -7,7 +7,7 @@ function [final_tf, tfed_pc] = curv_icp(source_pc, target_pc, varargin) % guess,
     % Handle optional args
     p = inputParser;
     addParameter(p, 'guess', eye(4));
-    addParameter(p, 'max_itters', 100);
+    addParameter(p, 'max_itters', 20);
     addParameter(p, 'err_converged_eps', 1e-6);
     addParameter(p, 'err_diff_converged_eps', 1e-6);
     parse(p, varargin{:});
@@ -23,8 +23,23 @@ function [final_tf, tfed_pc] = curv_icp(source_pc, target_pc, varargin) % guess,
     icp.err_diff_converged_eps = p.Results.err_diff_converged_eps;
     icp.nn_search_radius = 0.03;
     global result;
+    global Param;
     global last_err;
     last_err = 0;
+    makeVideo = Param.mV;
+    pauseLen = Param.pauseLen;
+    % Initialize video
+    if makeVideo
+        try
+            votype = 'avifile';
+            vo = avifile('video.avi', 'fps', min(5, 1/pauseLen));
+        catch
+            votype = 'VideoWriter';
+            vo = VideoWriter('video', 'MPEG-4');
+            set(vo, 'FrameRate', min(5, 1/pauseLen));
+            open(vo);
+        end
+    end
 
     % Apply guess
     icp.source_pc = transform_pc(icp.final_tf, icp.source_pc);
@@ -60,12 +75,41 @@ function [final_tf, tfed_pc] = curv_icp(source_pc, target_pc, varargin) % guess,
 
         % Display
         viz_current_itter(icp);
+        if pauseLen == inf
+            pause;
+        elseif pauseLen > 0
+            pause(pauseLen);
+        end
         % pause;
-        
+        if makeVideo
+            F = getframe(gcf);
+            switch votype
+              case 'avifile'
+                vo = addframe(vo, F);
+              case 'VideoWriter'
+                writeVideo(vo, F);
+              otherwise
+                error('unrecognized votype');
+            end
+        end
         % Update result
         result.time = [result.time,toc];
     end
 
     final_tf = icp.final_tf;
     tfed_pc = icp.source_pc;
+    
+    % Make video
+    if makeVideo
+        fprintf('Writing video...');
+        switch votype
+          case 'avifile'
+            vo = close(vo);
+          case 'VideoWriter'
+            close(vo);
+          otherwise
+            error('unrecognized votype');
+        end
+        fprintf('done\n');
+    end
 end
