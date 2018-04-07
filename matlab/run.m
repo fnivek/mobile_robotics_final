@@ -1,16 +1,19 @@
-function run(model,scene)
+function run(makeVideo,model,scene)
     % Runs the curvature ICP code
-    %   data_file - The filename to load data from
+    % data_file - The filename to load data from
 
     % Set some reasonable defaults
     plot_flag = true;
-    ds_ratio.source = 1;  %downsample ratio, 1 for keeping raw data density
-    ds_ratio.target = 10;
+    ds_ratio.source = 10;  %downsample ratio, 1 for keeping raw data density
+    ds_ratio.target = 100;
     if ~exist('model', 'var')
       model = 'data/model/toy_downsample.mat';
     end
     if ~exist('scene', 'var')
       scene = 'data/scene/scene1_easy.mat';
+    end
+    if ~exist('makeVideo','var') || isempty(makeVideo)
+        makeVideo = false;
     end
 
     % Load the data
@@ -18,9 +21,12 @@ function run(model,scene)
 
     % Results
     global result;
+    global Param;
     result.time = [];
     result.ite = 1;
     result.err = [];
+    Param.mV = makeVideo;
+    Param.pauseLen = 0.3;
 
     % Run curvature ICP
     [final_tf, tfed_pc] = curv_icp(source_pc, target_pc);
