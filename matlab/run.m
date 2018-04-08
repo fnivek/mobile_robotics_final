@@ -18,6 +18,8 @@ function run(makeVideo,model,scene)
 
     % Load the data
     [source_pc, target_pc] = load_data(model,scene,plot_flag,ds_ratio);
+    % Remove the table from the target_pc
+    target_pc(:, remove_table(target_pc)) = [];
 
     % Results
     global result;
