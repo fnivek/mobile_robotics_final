@@ -5,14 +5,15 @@ function opt_tf = ransac_optimize(icp)
     %   icp.source_pc - the source_pc points
     %   icp.target_pc - the target_pc points
     %   opt_tf - is the resulting homogeneous transform produced by finding the optimal transformation
-    
+
 % Extract the RANSAC coefficients
 coeff.numPtsToSample = 6;     % the minimum number of correspondences needed to fit a model
 coeff.iterNum = 2000;         % number of iterations to run the RANSAC sampling loop
 coeff.thDist = .12;           % inlier distance threshold; units are in pixels
+coeff.requiredInliers = length(icp.correspondences) * 0.2;
 
 opt_tf = eye(4);
-besterr = 100;
+besterr = inf;
 
 for i = 1:coeff.iterNum
     % Random sample of correspondences
@@ -26,7 +27,7 @@ for i = 1:coeff.iterNum
     % Euclidean distance calculation
     error_pc = (icp.target_pc(:,icp.correspondences(:,2)) - guess_pc(:,icp.correspondences(:,1))).^2;
     error = sqrt(sum(error_pc,1));
-    
+
     % Inlier threshold calculation
     numinlier = 0;
     for j = 1:1:length(error)
@@ -34,9 +35,9 @@ for i = 1:coeff.iterNum
             numinlier = numinlier + 1;
         end
     end
-    
+
     % Calclate how good the model is by minimizing avg distance error
-    if numinlier > length(error)*.7
+    if numinlier > coeff.requiredInliers
         avgerror = mean(error);
         if avgerror < besterr
             besterr = avgerror;

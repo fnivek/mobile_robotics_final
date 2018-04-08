@@ -55,9 +55,10 @@ function [final_tf, tfed_pc] = curv_icp(source_pc, target_pc, varargin) % guess,
     while ~is_converged(icp)
         result.ite = result.ite + 1;
         tic;
-        
+
         % Optimize
-        inc_tf = optimize(icp);
+        % inc_tf = optimize(icp);
+        inc_tf = ransac_optimize(icp);
 
         % Apply transform
         icp.source_feats = transform_feature(inc_tf, icp.source_feats);
@@ -98,7 +99,7 @@ function [final_tf, tfed_pc] = curv_icp(source_pc, target_pc, varargin) % guess,
 
     final_tf = icp.final_tf;
     tfed_pc = icp.source_pc;
-    
+
     % Make video
     if makeVideo
         fprintf('Writing video...');
