@@ -35,7 +35,7 @@ function [final_tf, tfed_pc] = curv_icp(source_pc, target_pc, varargin) % guess,
             vo = avifile('video.avi', 'fps', min(5, 1/pauseLen));
         catch
             votype = 'VideoWriter';
-            vo = VideoWriter('video', 'MPEG-4');
+            vo = VideoWriter('video');
             set(vo, 'FrameRate', min(5, 1/pauseLen));
             open(vo);
         end
