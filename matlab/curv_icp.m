@@ -6,14 +6,6 @@ function [final_tf, tfed_pc] = curv_icp(source_pc, target_pc, varargin) % guess,
 
     % Handle optional args
     p = inputParser;
-    addParameter(p, 'guess', eye(4));function [final_tf, tfed_pc] = curv_icp(source_pc, target_pc, varargin) % guess, max_itters, err_converged_eps, err_diff_converged_eps)
-    % Performs ICP with curvature
-    %   source_pc - The source point cloud for ICP
-    %   target_pc - The target point cloud for ICP
-    %   final_tf - the final homogeneous transform
-
-    % Handle optional args
-    p = inputParser;
     addParameter(p, 'guess', eye(4));
     addParameter(p, 'max_itters', 20);
     addParameter(p, 'err_converged_eps', 1e-2);
