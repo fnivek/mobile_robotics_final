@@ -11,8 +11,7 @@ function run(type,makeVideo,model,scene,ds_ratio_source,ds_ratio_target)
     Param.mV = makeVideo;
     Param.pauseLen = 0.3;
     
-    ds_ratio.source = ds_ratio_source;
-    ds_ratio.target = ds_ratio_target;
+    
     plot_flag = false;
     
     if ~exist('type', 'var')
@@ -25,15 +24,16 @@ function run(type,makeVideo,model,scene,ds_ratio_source,ds_ratio_target)
       scene = 'data/scene/scene1_easy.mat';
     end
     if ~exist('ds_ratio_source', 'var')
-      ds_ratio.source = 10;
+      ds_ratio_source = 10;
     end
     if ~exist('ds_ratio_target', 'var')
-      ds_ratio.target = 10;
+      ds_ratio_target = 10;
     end
     if ~exist('makeVideo','var') || isempty(makeVideo)
         makeVideo = false;
     end
-
+    ds_ratio.source = ds_ratio_source;
+    ds_ratio.target = ds_ratio_target;
     switch type
         case 'mtm'
             [source_pc, target_pc, gt_trans] = generate_model_trans(model);          
