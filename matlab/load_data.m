@@ -15,12 +15,12 @@ function [source_pc, target_pc] = load_data(model,scene,plot,ds_ratio)
     
     if(plot)
         figure(1)
-        plot3(source_pc(1, :), source_pc(2, :), source_pc(3, :), 'k.');
-        title("Model point cloud")
+        plot3(source_pc(1, :), source_pc(2, :), source_pc(3, :), 'r.');
+        title("Source Point Cloud")
         axis equal
         figure(2)
         plot3(target_pc(1, :), target_pc(2, :), target_pc(3, :), 'k.');
-        title("Scene point cloud")
+        title("Target Point Cloud")
         axis equal
     end
 end

@@ -1,9 +1,10 @@
-function run(makeVideo,model,scene)
+function run(load_from_file,makeVideo,model,scene)
     % Runs the curvature ICP code
     % data_file - The filename to load data from
 
     % Set some reasonable defaults
     plot_flag = true;
+    
     ds_ratio.source = 1;  %downsample ratio, 1 for keeping raw data density
     ds_ratio.target = 10;
     if ~exist('model', 'var')
@@ -17,7 +18,12 @@ function run(makeVideo,model,scene)
     end
 
     % Load the data
-    [source_pc, target_pc] = load_data(model,scene,plot_flag,ds_ratio);
+    if load_from_file
+        [source_pc, target_pc] = load_data(model,scene,plot_flag,ds_ratio);
+    else
+        source_pc = model;
+        target_pc = scene;
+    end
     % Remove the table from the target_pc
     target_pc(:, remove_table(target_pc)) = [];
 
