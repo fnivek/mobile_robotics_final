@@ -7,11 +7,11 @@ function run(type,makeVideo,model,scene,ds_ratio_source,ds_ratio_target)
     init
 
     % Set some reasonable defaults
-    global result;
+    %global result;
     global Param;
-    result.time = [];
-    result.ite = 1;
-    result.err = [];
+    %result.time = [];
+    %result.ite = 1;
+    %result.err = [];
     Param.mV = makeVideo;
     Param.pauseLen = 0.3;
 
@@ -44,13 +44,13 @@ function run(type,makeVideo,model,scene,ds_ratio_source,ds_ratio_target)
             source_pc = downsample_pc(source_pc,ds_ratio.source);
             target_pc = downsample_pc(target_pc,ds_ratio.target);
             target_pc(:, remove_table(target_pc)) = [];
-            [final_tf, tfed_pc] = curv_icp(source_pc, target_pc);
+            [final_tf, tfed_pc, result] = curv_icp(source_pc, target_pc);
         case 'mts'
             [source_pc, target_pc] = load_data(model,scene,plot_flag);
             source_pc = downsample_pc(source_pc,ds_ratio.source);
             target_pc = downsample_pc(target_pc,ds_ratio.target);
             target_pc(:, remove_table(target_pc)) = [];
-            [final_tf, tfed_pc] = curv_icp(source_pc, target_pc);
+            [final_tf, tfed_pc, result] = curv_icp(source_pc, target_pc);
         case 'ftf'
 
             frame_length = 20;

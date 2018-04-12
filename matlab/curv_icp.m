@@ -1,4 +1,4 @@
-function [final_tf, tfed_pc] = curv_icp(source_pc, target_pc, varargin) % guess, max_itters, err_converged_eps, err_diff_converged_eps)
+function [final_tf, tfed_pc, result] = curv_icp(source_pc, target_pc, varargin) % guess, max_itters, err_converged_eps, err_diff_converged_eps)
     % Performs ICP with curvature
     %   source_pc - The source point cloud for ICP
     %   target_pc - The target point cloud for ICP
@@ -8,8 +8,8 @@ function [final_tf, tfed_pc] = curv_icp(source_pc, target_pc, varargin) % guess,
     p = inputParser;
     addParameter(p, 'guess', eye(4));
     addParameter(p, 'max_itters', 20);
-    addParameter(p, 'err_converged_eps', 1e-2);
-    addParameter(p, 'err_diff_converged_eps', 1e-3);
+    addParameter(p, 'err_converged_eps', 1e-3);
+    addParameter(p, 'err_diff_converged_eps', 1e-4);
     parse(p, varargin{:});
 
     % Initialize
@@ -23,10 +23,12 @@ function [final_tf, tfed_pc] = curv_icp(source_pc, target_pc, varargin) % guess,
     icp.err_diff_converged_eps = p.Results.err_diff_converged_eps;
     icp.nn_search_radius = 0.03;
     % icp.euc_dist = [];
-    global result;
+    % global result;
+    icp.result={};
+    icp.result.time=[];
+    icp.result.ite=1;
+    icp.result.err=[];
     global Param;
-    global last_err;
-    last_err = 0;
     makeVideo = Param.mV;
     pauseLen = Param.pauseLen;
     % Initialize video
@@ -51,10 +53,11 @@ function [final_tf, tfed_pc] = curv_icp(source_pc, target_pc, varargin) % guess,
 
     tic;
     [icp.correspondences,icp.euc_dist] = find_correspondences(icp);
-    result.time = [result.time,toc];
+    icp.result.time = [icp.result.time,toc];
     % Check convergence
-    while ~is_converged(icp)
-        result.ite = result.ite + 1;
+    [converged, icp.result.err]=is_converged(icp);
+    while ~converged
+        icp.result.ite = icp.result.ite + 1;
         tic;
 
         % Optimize
@@ -95,11 +98,15 @@ function [final_tf, tfed_pc] = curv_icp(source_pc, target_pc, varargin) % guess,
             end
         end
         % Update result
-        result.time = [result.time,toc];
+        icp.result.time = [icp.result.time,toc];
+        
+        % Check convergence
+        [converged, icp.result.err] = is_converged(icp);
     end
 
     final_tf = icp.final_tf;
     tfed_pc = icp.source_pc;
+    result = icp.result;
 
     % Make video
     if makeVideo
