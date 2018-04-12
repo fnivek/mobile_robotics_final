@@ -1,12 +1,13 @@
-function run(load_from_file,makeVideo,model,scene)
+function [final_tf, tfed_pc] = run(load_from_file,makeVideo,model,scene,ds_ratio)
     % Runs the curvature ICP code
     % data_file - The filename to load data from
 
     % Set some reasonable defaults
     plot_flag = true;
-    
-    ds_ratio.source = 1;  %downsample ratio, 1 for keeping raw data density
-    ds_ratio.target = 10;
+    if ~exist('ds_ratio', 'var')
+        ds_ratio.source = 10;  %downsample ratio, 1 for keeping raw data density
+        ds_ratio.target = 10;
+    end
     if ~exist('model', 'var')
       model = 'data/model/toy_downsample.mat';
     end
@@ -21,8 +22,11 @@ function run(load_from_file,makeVideo,model,scene)
     if load_from_file
         [source_pc, target_pc] = load_data(model,scene,plot_flag,ds_ratio);
     else
+        
         source_pc = model;
         target_pc = scene;
+        source_pc = downsample_pc(source_pc,ds_ratio.source);
+        target_pc = downsample_pc(target_pc,ds_ratio.target);
     end
     % Remove the table from the target_pc
     target_pc(:, remove_table(target_pc)) = [];
