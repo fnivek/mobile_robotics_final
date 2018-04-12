@@ -2,6 +2,10 @@ function run(type,makeVideo,model,scene,ds_ratio_source,ds_ratio_target)
     % Runs the curvature ICP code
     % data_file - The filename to load data from
 
+    % Include other folders
+    addpath('./example_icp');
+    init
+
     % Set some reasonable defaults
     global result;
     global Param;
@@ -10,10 +14,10 @@ function run(type,makeVideo,model,scene,ds_ratio_source,ds_ratio_target)
     result.err = [];
     Param.mV = makeVideo;
     Param.pauseLen = 0.3;
-    
-    
+
+
     plot_flag = false;
-    
+
     if ~exist('type', 'var')
         type = 'mts';
     end
@@ -36,7 +40,7 @@ function run(type,makeVideo,model,scene,ds_ratio_source,ds_ratio_target)
     ds_ratio.target = ds_ratio_target;
     switch type
         case 'mtm'
-            [source_pc, target_pc, gt_trans] = generate_model_trans(model);          
+            [source_pc, target_pc, gt_trans] = generate_model_trans(model);
             source_pc = downsample_pc(source_pc,ds_ratio.source);
             target_pc = downsample_pc(target_pc,ds_ratio.target);
             target_pc(:, remove_table(target_pc)) = [];
@@ -48,7 +52,7 @@ function run(type,makeVideo,model,scene,ds_ratio_source,ds_ratio_target)
             target_pc(:, remove_table(target_pc)) = [];
             [final_tf, tfed_pc] = curv_icp(source_pc, target_pc);
         case 'ftf'
-            
+
             frame_length = 20;
             scene{frame_length} = {};
             tf{frame_length} = {};
@@ -73,16 +77,29 @@ function run(type,makeVideo,model,scene,ds_ratio_source,ds_ratio_target)
                 hold on
             end
     end
-            
+
     % Remove the table from the target_pc
-%     target_pc(:, remove_table(target_pc)) = [];
+    % target_pc(:, remove_table(target_pc)) = [];
 
     % Results
 
 
-    % Run curvature ICP
-    
-%     [final_tf, tfed_pc] = curv_icp(source_pc, target_pc);
+    % Run ICP
+    % disp('Running gicp');
+    % target.Location = target_pc';
+    % source.Location = source_pc';
+    % gicp_final_tf = gicp_fmin(target, source)
+    % gicp_tfed_pc = transform_pc(gicp_final_tf, source_pc);
+
+    % disp('Running curvature icp')
+    % [final_tf, tfed_pc] = curv_icp(source_pc, target_pc);
+
+    % figure;
+    % hold on;
+    % plot3(target_pc(1, :), target_pc(2, :), target_pc(3, :), 'k.');
+    % plot3(tfed_pc(1, :), tfed_pc(2, :), tfed_pc(3, :), 'r.');
+    % plot3(gicp_tfed_pc(1, :), gicp_tfed_pc(2, :), gicp_tfed_pc(3, :), 'b.');
+    % title('GICP vs Curvature ICP');
 
     % Display results
 
