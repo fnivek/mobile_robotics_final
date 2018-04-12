@@ -1,4 +1,4 @@
-function correspondences = find_correspondences(icp)
+function [correspondences,euc_dist] = find_correspondences(icp)
     % Finds correspondences between the source and target using the features
     %   icp.source_pc - the source_pc points
     %   icp.source_feats - the features of the source pc
@@ -11,7 +11,6 @@ function correspondences = find_correspondences(icp)
     %  https://doi.org/10.1109/TPAMI.2017.2648803
     f = waitbar(0,'1','Name','Finding Correspondence',...
     'CreateCancelBtn','setappdata(gcbf,''canceling'',1)');
-    global euc_dist;
 
     lambdap = 0.5; % We need to tune these parameters.
     lambdan = 0.3;
@@ -20,11 +19,13 @@ function correspondences = find_correspondences(icp)
     [~,m]=size(icp.source_pc);
     [~,n]=size(icp.target_pc);
     dis = zeros(n,m);
+    euc_dist = zeros(n,m);
     for i=1:m
         % Calculate D_p, the euclidean distance between points.
         for j=1:n
             tmp_matrix = sqrt((icp.target_pc(1,j)-icp.source_pc(1,i))^2 + (icp.target_pc(2,j)-icp.source_pc(2,i))^2 + (icp.target_pc(3,j)-icp.source_pc(3,i))^2);
             dis(j,i) = tmp_matrix;
+            euc_dist(j,i) = dis(j,i);
         end
         R = max(dis(:,i));
         % Normalize D_p.
@@ -33,7 +34,6 @@ function correspondences = find_correspondences(icp)
         else
             dis(:,i) = 0;
         end
-        euc_dist = dis;
         % Calculate D_n and D_c for each point pair.
         for j=1:n
             ni = icp.source_feats(1:3,i);
