@@ -20,7 +20,7 @@ function viz_current_itter(icp, varargin)
     figure(3);
     clf;
     hold on;
-    title('Itteration ' + string(icp.itter));
+    title('Iteration ' + string(icp.itter));
     axis equal;
 
     % Plot the clouds
