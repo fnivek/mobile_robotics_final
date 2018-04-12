@@ -1,37 +1,8 @@
-function [final_tf, tfed_pc] = run(load_from_file,makeVideo,model,scene,ds_ratio)
+function run(type,makeVideo,model,scene,ds_ratio_source,ds_ratio_target)
     % Runs the curvature ICP code
     % data_file - The filename to load data from
 
     % Set some reasonable defaults
-    plot_flag = true;
-    if ~exist('ds_ratio', 'var')
-        ds_ratio.source = 10;  %downsample ratio, 1 for keeping raw data density
-        ds_ratio.target = 10;
-    end
-    if ~exist('model', 'var')
-      model = 'data/model/toy_downsample.mat';
-    end
-    if ~exist('scene', 'var')
-      scene = 'data/scene/scene1_easy.mat';
-    end
-    if ~exist('makeVideo','var') || isempty(makeVideo)
-        makeVideo = false;
-    end
-
-    % Load the data
-    if load_from_file
-        [source_pc, target_pc] = load_data(model,scene,plot_flag,ds_ratio);
-    else
-        
-        source_pc = model;
-        target_pc = scene;
-        source_pc = downsample_pc(source_pc,ds_ratio.source);
-        target_pc = downsample_pc(target_pc,ds_ratio.target);
-    end
-    % Remove the table from the target_pc
-    target_pc(:, remove_table(target_pc)) = [];
-
-    % Results
     global result;
     global Param;
     result.time = [];
@@ -39,9 +10,79 @@ function [final_tf, tfed_pc] = run(load_from_file,makeVideo,model,scene,ds_ratio
     result.err = [];
     Param.mV = makeVideo;
     Param.pauseLen = 0.3;
+    
+    ds_ratio.source = ds_ratio_source;
+    ds_ratio.target = ds_ratio_target;
+    plot_flag = false;
+    
+    if ~exist('type', 'var')
+        type = 'mts';
+    end
+    if ~exist('model', 'var')
+      model = 'data/model/toy_downsample.mat';
+    end
+    if ~exist('scene', 'var')
+      scene = 'data/scene/scene1_easy.mat';
+    end
+    if ~exist('ds_ratio_source', 'var')
+      ds_ratio.source = 10;
+    end
+    if ~exist('ds_ratio_target', 'var')
+      ds_ratio.target = 10;
+    end
+    if ~exist('makeVideo','var') || isempty(makeVideo)
+        makeVideo = false;
+    end
+
+    switch type
+        case 'mtm'
+            [source_pc, target_pc, gt_trans] = generate_model_trans(model);          
+            source_pc = downsample_pc(source_pc,ds_ratio.source);
+            target_pc = downsample_pc(target_pc,ds_ratio.target);
+            target_pc(:, remove_table(target_pc)) = [];
+            [final_tf, tfed_pc] = curv_icp(source_pc, target_pc);
+        case 'mts'
+            [source_pc, target_pc] = load_data(model,scene,plot_flag);
+            source_pc = downsample_pc(source_pc,ds_ratio.source);
+            target_pc = downsample_pc(target_pc,ds_ratio.target);
+            target_pc(:, remove_table(target_pc)) = [];
+            [final_tf, tfed_pc] = curv_icp(source_pc, target_pc);
+        case 'ftf'
+            
+            frame_length = 20;
+            scene{frame_length} = {};
+            tf{frame_length} = {};
+            tf{1} = eye(4);
+            for i = 1 : frame_length
+                frame_data = load(strcat('data/ftf_scene/',int2str(i),'.mat'));
+                scene{i} = frame_data.scene;
+                scene{i} = downsample_pc(scene{i},ds_ratio.source);
+            end
+            for i = 1 : frame_length-1
+                source_pc = scene{i+1};
+                target_pc = scene{i};
+                target_pc(:, remove_table(target_pc)) = [];
+                [tf{i+1},~] = curv_icp(source_pc,target_pc);
+                tf{i+1} = tf{i+1} * tf{i};
+            end
+            for i = 1 : frame_length
+                temp_pc = scene{i};
+                temp_pc(4,:) = 1;
+                transformed_pc = tf{i} * temp_pc ;
+                plot3(transformed_pc(1,:),transformed_pc(2,:),transformed_pc(3,:),'k.');
+                hold on
+            end
+    end
+            
+    % Remove the table from the target_pc
+%     target_pc(:, remove_table(target_pc)) = [];
+
+    % Results
+
 
     % Run curvature ICP
-    [final_tf, tfed_pc] = curv_icp(source_pc, target_pc);
+    
+%     [final_tf, tfed_pc] = curv_icp(source_pc, target_pc);
 
     % Display results
 
