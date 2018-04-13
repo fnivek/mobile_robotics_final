@@ -43,14 +43,23 @@ function run(type,makeVideo,model,scene,ds_ratio_source,ds_ratio_target)
             [source_pc, target_pc, gt_trans] = generate_model_trans(model);
             source_pc = downsample_pc(source_pc,ds_ratio.source);
             target_pc = downsample_pc(target_pc,ds_ratio.target);
-            target_pc(:, remove_table(target_pc)) = [];
             [final_tf, tfed_pc, result] = curv_icp(source_pc, target_pc);
+            disp('Running gicp');
+            target.Location = target_pc';
+            source.Location = source_pc';
+            gicp_final_tf = gicp_fmin(target, source);
+            gicp_tfed_pc = transform_pc(gicp_final_tf, source_pc);
         case 'mts'
             [source_pc, target_pc] = load_data(model,scene,plot_flag);
             source_pc = downsample_pc(source_pc,ds_ratio.source);
             target_pc = downsample_pc(target_pc,ds_ratio.target);
             target_pc(:, remove_table(target_pc)) = [];
             [final_tf, tfed_pc, result] = curv_icp(source_pc, target_pc);
+            disp('Running gicp');
+            target.Location = target_pc';
+            source.Location = source_pc';
+            gicp_final_tf = gicp_fmin(target, source);
+            gicp_tfed_pc = transform_pc(gicp_final_tf, source_pc);
         case 'ftf'
 
             frame_length = 20;
@@ -65,6 +74,7 @@ function run(type,makeVideo,model,scene,ds_ratio_source,ds_ratio_target)
             for i = 1 : frame_length-1
                 source_pc = scene{i+1};
                 target_pc = scene{i};
+                % Do we actually want to remove the table?
                 target_pc(:, remove_table(target_pc)) = [];
                 [tf{i+1},~] = curv_icp(source_pc,target_pc);
                 tf{i+1} = tf{i+1} * tf{i};
@@ -83,23 +93,33 @@ function run(type,makeVideo,model,scene,ds_ratio_source,ds_ratio_target)
 
     % Results
 
+    if type == string('mts') || type == string('mtm')
+        figure;
+        hold on;
+        plot3(target_pc(1, :), target_pc(2, :), target_pc(3, :), 'k.');
+        plot3(tfed_pc(1, :), tfed_pc(2, :), tfed_pc(3, :), 'r.');
+        plot3(gicp_tfed_pc(1, :), gicp_tfed_pc(2, :), gicp_tfed_pc(3, :), 'b.');
+        title('GICP vs Curvature ICP');
+    end
 
-    % Run ICP
-    % disp('Running gicp');
-    % target.Location = target_pc';
-    % source.Location = source_pc';
-    % gicp_final_tf = gicp_fmin(target, source)
-    % gicp_tfed_pc = transform_pc(gicp_final_tf, source_pc);
+    if type == string('mtm')
+        % Compute error
+        disp('GICP point to point error')
+        calc_error(gicp_tfed_pc, target_pc)
+        disp('Curvature ICP point to point error')
+        calc_error(tfed_pc, target_pc)
 
-    % disp('Running curvature icp')
-    % [final_tf, tfed_pc] = curv_icp(source_pc, target_pc);
-
-    % figure;
-    % hold on;
-    % plot3(target_pc(1, :), target_pc(2, :), target_pc(3, :), 'k.');
-    % plot3(tfed_pc(1, :), tfed_pc(2, :), tfed_pc(3, :), 'r.');
-    % plot3(gicp_tfed_pc(1, :), gicp_tfed_pc(2, :), gicp_tfed_pc(3, :), 'b.');
-    % title('GICP vs Curvature ICP');
+        disp('Ground truth TF')
+        gt_trans
+        disp('GICP TF and SE3 Norm')
+        gicp_final_tf
+        norm(logm(gt_trans \ gicp_final_tf))
+        disp('Curvature TF and SE3 Norm')
+        final_tf
+        norm(logm(gt_trans \ final_tf))
+        disp('<Curvature TF, GICP TF> SE3 Norm')
+        norm(logm(gicp_final_tf \ final_tf))
+    end
 
     % Display results
 
