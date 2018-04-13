@@ -136,7 +136,7 @@ function run(type,makeVideo,model,scene,ds_ratio_source,ds_ratio_target)
     xlabel('iteration');
     ylabel('accumulated time (min)')
     figure;
-    plot(1:result.ite, result.err);
+    plot(2:result.ite, result.err(2:result.ite));
     title('Mean Squared Error');
     xlabel('iteration');
 end
