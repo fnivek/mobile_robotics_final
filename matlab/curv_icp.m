@@ -7,9 +7,9 @@ function [final_tf, tfed_pc, result] = curv_icp(source_pc, target_pc, varargin) 
     % Handle optional args
     p = inputParser;
     addParameter(p, 'guess', eye(4));
-    addParameter(p, 'max_itters', 20);
-    addParameter(p, 'err_converged_eps', 1e-3);
-    addParameter(p, 'err_diff_converged_eps', 1e-4);
+    addParameter(p, 'max_itters', 30);
+    addParameter(p, 'err_converged_eps', 1e-5);
+    addParameter(p, 'err_diff_converged_eps', 1e-6);
     parse(p, varargin{:});
 
     % Initialize
