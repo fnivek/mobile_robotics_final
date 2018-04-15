@@ -28,21 +28,21 @@ function [final_tf, tfed_pc, result] = curv_icp(source_pc, target_pc, varargin) 
     icp.result.time=[];
     icp.result.ite=1;
     icp.result.err=[];
-    global Param;
-    makeVideo = Param.mV;
-    pauseLen = Param.pauseLen;
-    % Initialize video
-    if makeVideo
-        try
-            votype = 'avifile';
-            vo = avifile('video.avi', 'fps', min(5, 1/pauseLen));
-        catch
-            votype = 'VideoWriter';
-            vo = VideoWriter('video');
-            set(vo, 'FrameRate', min(5, 1/pauseLen));
-            open(vo);
-        end
-    end
+    % global Param;
+    % makeVideo = Param.mV;
+    % pauseLen = Param.pauseLen;
+    % % Initialize video
+    % if makeVideo
+    %     try
+    %         votype = 'avifile';
+    %         vo = avifile('video.avi', 'fps', min(5, 1/pauseLen));
+    %     catch
+    %         votype = 'VideoWriter';
+    %         vo = VideoWriter('video');
+    %         set(vo, 'FrameRate', min(5, 1/pauseLen));
+    %         open(vo);
+    %     end
+    % end
 
     % Apply guess
     icp.source_pc = transform_pc(icp.final_tf, icp.source_pc);
@@ -80,26 +80,26 @@ function [final_tf, tfed_pc, result] = curv_icp(source_pc, target_pc, varargin) 
 
         % Display
         viz_current_itter(icp);
-        if pauseLen == inf
-            pause;
-        elseif pauseLen > 0
-            pause(pauseLen);
-        end
-        % pause;
-        if makeVideo
-            F = getframe(gcf);
-            switch votype
-              case 'avifile'
-                vo = addframe(vo, F);
-              case 'VideoWriter'
-                writeVideo(vo, F);
-              otherwise
-                error('unrecognized votype');
-            end
-        end
+        % if pauseLen == inf
+        %     pause;
+        % elseif pauseLen > 0
+        %     pause(pauseLen);
+        % end
+        % % pause;
+        % if makeVideo
+        %     F = getframe(gcf);
+        %     switch votype
+        %       case 'avifile'
+        %         vo = addframe(vo, F);
+        %       case 'VideoWriter'
+        %         writeVideo(vo, F);
+        %       otherwise
+        %         error('unrecognized votype');
+        %     end
+        % end
         % Update result
         icp.result.time = [icp.result.time,toc];
-        
+
         % Check convergence
         [converged, icp.result.err] = is_converged(icp);
     end
@@ -108,19 +108,19 @@ function [final_tf, tfed_pc, result] = curv_icp(source_pc, target_pc, varargin) 
     tfed_pc = icp.source_pc;
     result = icp.result;
 
-    % Make video
-    if makeVideo
-        fprintf('Writing video...');
-        switch votype
-          case 'avifile'
-            vo = close(vo);
-          case 'VideoWriter'
-            close(vo);
-          otherwise
-            error('unrecognized votype');
-        end
-        fprintf('done\n');
-    end
+    % % Make video
+    % if makeVideo
+    %     fprintf('Writing video...');
+    %     switch votype
+    %       case 'avifile'
+    %         vo = close(vo);
+    %       case 'VideoWriter'
+    %         close(vo);
+    %       otherwise
+    %         error('unrecognized votype');
+    %     end
+    %     fprintf('done\n');
+    % end
 end
 
 

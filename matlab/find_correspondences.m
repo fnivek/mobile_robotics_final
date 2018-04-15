@@ -9,8 +9,8 @@ function [correspondences,euc_dist] = find_correspondences(icp)
 
     %% Please refer to the following link for the fomulae of the distances.
     %  https://doi.org/10.1109/TPAMI.2017.2648803
-    f = waitbar(0,'1','Name','Finding Correspondence',...
-    'CreateCancelBtn','setappdata(gcbf,''canceling'',1)');
+    % f = waitbar(0,'1','Name','Finding Correspondence',...
+    % 'CreateCancelBtn','setappdata(gcbf,''canceling'',1)');
 
     lambdap = 0.5; % We need to tune these parameters.
     lambdan = 0.3;
@@ -45,14 +45,14 @@ function [correspondences,euc_dist] = find_correspondences(icp)
             % The distance metric.
             dis(j,i) = lambdap*dis(j,i) + lambdan*dn + lambdac*dc;
         end
-        waitbar(i/m,f,strcat(sprintf('%12.5f',i/m*100),'%'))
-        if getappdata(f,'canceling')
-            break
-        end
+        % waitbar(i/m,f,strcat(sprintf('%12.5f',i/m*100),'%'))
+        % if getappdata(f,'canceling')
+        %     break
+        % end
     end
 
 
-    delete(f)
+    % delete(f)
     % Find the minimum distance, find the correspondences.
     correspondences = zeros(0, 2);
     min_dist = zeros(m,1);
