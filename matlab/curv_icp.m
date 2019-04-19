@@ -28,6 +28,9 @@ function [final_tf, tfed_pc, result] = curv_icp(source_pc, target_pc, varargin) 
     icp.result.time=[];
     icp.result.ite=1;
     icp.result.err=[];
+    % Number of target cloud points sampled for correspondence calculation    
+    icp.num_rand_source_sample = 1000;
+    icp.source_pc_sample_index = zeros(icp.num_rand_source_sample);
     global Param;
     makeVideo = Param.mV;
     pauseLen = Param.pauseLen;
@@ -52,7 +55,7 @@ function [final_tf, tfed_pc, result] = curv_icp(source_pc, target_pc, varargin) 
     [icp.target_feats] = calc_features(icp.target_pc, icp.nn_search_radius);
 
     tic;
-    [icp.correspondences,icp.euc_dist] = find_correspondences(icp);
+    [icp.correspondences,icp.euc_dist,icp.source_pc_sample_index] = find_correspondences(icp);
     icp.result.time = [icp.result.time,toc];
     % Check convergence
     [converged, icp.result.err]=is_converged(icp);

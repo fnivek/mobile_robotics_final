@@ -1,4 +1,4 @@
-function [correspondences,euc_dist] = find_correspondences(icp)
+function [correspondences,euc_dist,source_pc_sample_index] = find_correspondences(icp)
     % Finds correspondences between the source and target using the features
     %   icp.source_pc - the source_pc points
     %   icp.source_feats - the features of the source pc
@@ -18,12 +18,21 @@ function [correspondences,euc_dist] = find_correspondences(icp)
     thetak = 0.01;
     [~,m]=size(icp.source_pc);
     [~,n]=size(icp.target_pc);
-    dis = zeros(n,m);
-    euc_dist = zeros(n,m);
-    for i=1:m
+    % random sample source_pc    
+    source_pc_sample_index = randi(length(icp.source_pc),[1,icp.num_rand_source_sample]);
+    if length(icp.num_rand_source_sample) < m
+        source_pc_sample = icp.source_pc(:,source_pc_sample_index);
+    else
+        source_pc_sample = icp.source_pc;
+    end
+    m_sample = length(source_pc_sample);
+    dis = zeros(n,m_sample);
+    euc_dist = zeros(n,m_sample);
+    
+    for i=1:m_sample
         % Calculate D_p, the euclidean distance between points.
         for j=1:n
-            tmp_matrix = sqrt((icp.target_pc(1,j)-icp.source_pc(1,i))^2 + (icp.target_pc(2,j)-icp.source_pc(2,i))^2 + (icp.target_pc(3,j)-icp.source_pc(3,i))^2);
+            tmp_matrix = sqrt((icp.target_pc(1,j)-source_pc_sample(1,i))^2 + (icp.target_pc(2,j)-source_pc_sample(2,i))^2 + (icp.target_pc(3,j)-source_pc_sample(3,i))^2);
             dis(j,i) = tmp_matrix;
             euc_dist(j,i) = dis(j,i);
         end
@@ -45,7 +54,7 @@ function [correspondences,euc_dist] = find_correspondences(icp)
             % The distance metric.
             dis(j,i) = lambdap*dis(j,i) + lambdan*dn + lambdac*dc;
         end
-        waitbar(i/m,f,strcat(sprintf('%12.5f',i/m*100),'%'))
+        waitbar(i/m_sample,f,strcat(sprintf('%12.5f',i/m_sample*100),'%'))
         if getappdata(f,'canceling')
             break
         end
@@ -55,8 +64,8 @@ function [correspondences,euc_dist] = find_correspondences(icp)
     delete(f)
     % Find the minimum distance, find the correspondences.
     correspondences = zeros(0, 2);
-    min_dist = zeros(m,1);
-    for i = 1:m
+    min_dist = zeros(m_sample,1);
+    for i = 1:m_sample
         index = find(dis(:,i) == min(dis(:,i)));
         if isempty(index)
             continue
@@ -64,6 +73,7 @@ function [correspondences,euc_dist] = find_correspondences(icp)
         correspondences = [correspondences; i, index];
         min_dist(i) = min(dis(:,i));
     end
+%     correspondences(:,1) = source_pc_sample_index(correspondences(:,1));
 end
 
 
